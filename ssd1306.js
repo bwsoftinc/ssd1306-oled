@@ -59,8 +59,7 @@ var _ssd1306 = function(busId, address, width, height) {
     this.bytes = {};  
     this.byteArr = [];
     this.add = function(val) {
-      var v = val.toString();
-    
+      var v = val.toString();    
       if(!this.bytes.hasOwnProperty(v)) {
         this.bytes[v] = val;
         this.byteArr.push(val);
@@ -287,14 +286,12 @@ var _ssd1306 = function(busId, address, width, height) {
     var dirt = this.dirtyBytes.byteArr.sort(function(a,b) { return a - b; }),
       start = 0, end = 1, len = dirt.length, segments = [], segment = [],
       bufstart = 0, bufend = 0, buflen = 0;
-  
-    //TODO: Further optimization if text wraps EOL, doensn't need to be split into separate segment
-	
-    for(;start < len; start = end, end++) {
-      for(;dirt[end-1] + 1 == dirt[end] && end - start % 32 > 0 && dirt[end] % 32 > 0; end++);
-      segments.push([dirt[start], dirt[end-1]]);    
+
+    for(;start < len; start = end++) {
+      for(;dirt[end-1] + 1 == dirt[end] && end - start < 32 && dirt[end] % 32 > 0; end++);
+      segments.push([dirt[start], dirt[end-1]]);
     }
-	
+
     len = segments.length;
     this.waitForWriteSync(function() {
       for(var i = 0; i < len; i++) {
@@ -303,7 +300,7 @@ var _ssd1306 = function(busId, address, width, height) {
       
         var cmd = new Buffer([
           this.COLUMNADDR, start, start + buflen - 1, 
-		  this.PAGEADDR, end, end
+		  this.PAGEADDR, end, end + 1
         ]);
 		
         this.bus.writeI2cBlockSync(this.ADDRESS, this.CMD, 6, cmd);    
@@ -317,3 +314,4 @@ var _ssd1306 = function(busId, address, width, height) {
 }
 
 module.exports = _ssd1306;
+
