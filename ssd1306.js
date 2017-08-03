@@ -164,8 +164,8 @@ var _ssd1306 = function(busId, address, width, height) {
   
   this._drawOffsetString = function(x, yo, ptr, string, color, fixed) {
     var len = string.length, len1 = len - 1, oy = 8 - yo, 
-        dolo = ptr <= this.WIDTH * this.HEIGHT - this.WIDTH;
-    
+        dolo = ptr < this.buffer.length - this.WIDTH;
+	
     for(var i = 0; i < len; i++) {      
       if((x = this._drawOffsetGlyph(x, yo, oy, ptr, dolo, this._getGlyph(string[i]), color, fixed)) < 0)
         break;
@@ -294,19 +294,18 @@ var _ssd1306 = function(busId, address, width, height) {
       for(;dirt[end-1] + 1 == dirt[end] && end - start % 32 > 0 && dirt[end] % 32 > 0; end++);
       segments.push([dirt[start], dirt[end-1]]);    
     }
-  
+	
     len = segments.length;
-  
-    var logged = false;
     this.waitForWriteSync(function() {
       for(var i = 0; i < len; i++) {
-        segment = segments[i], bufstart = segment[0], bufend = segment[1] + 1, buflen = bufend - bufstart;
+        segment = segments[i], bufstart = segment[0], bufend = segment[1] + 1, buflen = bufend - bufstart,
         start = bufstart % this.WIDTH, end = Math.floor(bufstart / this.WIDTH);
       
         var cmd = new Buffer([
-          this.COLUMNADDR, start, start + buflen - 1, this.PAGEADDR, end, end
+          this.COLUMNADDR, start, start + buflen - 1, 
+		  this.PAGEADDR, end, end
         ]);
-    
+		
         this.bus.writeI2cBlockSync(this.ADDRESS, this.CMD, 6, cmd);    
         this.bus.writeI2cBlockSync(this.ADDRESS, this.DATA, buflen, this.buffer.slice(bufstart, bufend));
       }
@@ -318,4 +317,3 @@ var _ssd1306 = function(busId, address, width, height) {
 }
 
 module.exports = _ssd1306;
-
