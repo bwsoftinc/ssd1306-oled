@@ -1,7 +1,7 @@
 module.exports = {
   width: 5,
   height: 7,
-  data: [
+  data: [ //TODO: More ASCII!
     { lead: 0, trail: 1, width: 4, bytes: [0x7F, 0x41, 0x41, 0x7F, 0x00], intCode: 0 }, // [NUL]
     { lead: 0, trail: 1, width: 4, bytes: [0x7F, 0x41, 0x41, 0x7F, 0x00], intCode: 1 }, // [SOH]
     { lead: 0, trail: 1, width: 4, bytes: [0x7F, 0x41, 0x41, 0x7F, 0x00], intCode: 2 }, // [STX]
@@ -129,7 +129,7 @@ module.exports = {
     { lead: 2, trail: 2, width: 1, bytes: [0x00, 0x00, 0x7F, 0x00, 0x00], intCode: 124 }, // '|'
     { lead: 1, trail: 1, width: 3, bytes: [0x00, 0x41, 0x36, 0x08, 0x00], intCode: 125 }, // '}'
     { lead: 0, trail: 0, width: 5, bytes: [0x02, 0x04, 0x02, 0x02, 0x04], intCode: 126 }, // '~'
-	{ lead: 0, trail: 1, width: 4, bytes: [0x7F, 0x41, 0x41, 0x7F, 0x00], intCode: 127 }, // [DEL]
+    { lead: 0, trail: 1, width: 4, bytes: [0x7F, 0x41, 0x41, 0x7F, 0x00], intCode: 127 }, // [DEL]
     { lead: 2, trail: 0, width: 3, bytes: [0x00, 0x00, 0x38, 0x28, 0x38], intCode: 128 }  // °
   ]
 };
