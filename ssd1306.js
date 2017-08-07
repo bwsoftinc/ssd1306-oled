@@ -567,57 +567,6 @@ class ssd1306 {
       this.bus.writeI2cBlockSync(this.ADDRESS, this.DATA, 32, buf.slice(v, v + 32));
   }
   
-  sync() {
-    return new Promise((rs, rj) => {
-      this.buffer.doubleBuffer((buffer) => {
-        if(!buffer.dirty.length) return rs();
-        
-        var buf = buffer.bytes,
-            dirt = buffer.dirty.sort(function(a,b) { return a - b; }),
-            len = dirt.length,
-            start = 0, end = 1,  segments = [], segment = [],
-            bufstart = 0, bufend = 0, buflen = 0;
-
-        for(;start < len; start = end++) {
-          for(;dirt[end-1] + 1 == dirt[end] && end - start < 32 && dirt[end] % 32 > 0; end++);
-          segments.push([dirt[start], dirt[end-1]]);
-        }
-      
-        len = segments.length;
-        
-        if(len > this.buffer.blocks)
-          return this._flush(buf, rs, rj);
-        else {
-          var cmd = new Buffer([
-            this.COLUMNADDR, 0, 0,
-            this.PAGEADDR, 1, 1
-          ]);
-          
-          this.waitForWrite().then(() => {
-            (function loop(that, i) {            
-              segment = segments[i++], bufstart = segment[0], bufend = segment[1] + 1, buflen = bufend - bufstart,
-              start = bufstart % that.WIDTH, end = Math.floor(bufstart / that.WIDTH);
-              
-              cmd[1] = start;
-              cmd[2] = start + buflen -1;
-              cmd[4] = end;
-              cmd[5] = end;
-              
-              that.bus.writeI2cBlock(that.ADDRESS, that.CMD, 6, cmd, (err) => {
-                if(err) return rj(err);
-                that.bus.writeI2cBlock(that.ADDRESS, that.DATA, buflen, buf.slice(bufstart, bufend), (err) => {
-                  if(err) return rj(err);
-                  if(i < len) return loop(that, i);
-                  return rs();                
-                });
-              });   
-            })(this, 0);          
-          });
-        }
-      });
-    });
-  }
-  
   sync() { 
     return new Promise((rs, rj) => {
       if(!this.buffer._dirty.length) return rs();  
