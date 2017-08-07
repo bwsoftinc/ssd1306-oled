@@ -536,13 +536,13 @@ class ssd1306 {
   }
 
   flushSync() {
-    this.buffer.doubleBuffer((b) => {  
-      this._flushSync(b.bytes);
+    this.buffer.doubleBuffer((buffer) => {  
+      this._flushSync(buffer.bytes);
     });
   }
   
   _flushSync(buf) {
-    var len = this.buffer._bytes.length;
+    var len = buf.length;
     this.bus.writeI2cBlockSync(this.ADDRESS, this.CMD, 6, this.flushBuffer);
     for(var v = 0; v < len; v += 32)
       this.bus.writeI2cBlockSync(this.ADDRESS, this.DATA, 32, buf.slice(v, v + 32));
