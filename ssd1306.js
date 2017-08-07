@@ -618,6 +618,47 @@ class ssd1306 {
     });
   }
   
+  sync() { 
+    return new Promise((rs, rj) => {
+      if(!this.buffer._dirty.length) return rs();  
+      this.buffer.doubleBuffer((buffer) => {
+        
+        var buf = buffer.bytes, 
+            dirt = buffer.dirty.sort((a,b) => a - b),
+            len = dirt.length, 
+            cmd = new Buffer([
+              this.COLUMNADDR, 0, 0,
+              this.PAGEADDR, 1, 1
+            ]);
+            
+        this.waitForWrite().then(() => {
+          (function cloop(that, start, end1, end, ds, de1, de) {
+            if(end === len || de % 128 === 0 || de1 + 1 !== de) {
+              cmd[1] = ds % 128;
+              cmd[2] = cmd[1] + de1 - ds;
+              cmd[4] = cmd[5] = Math.floor(ds / that.WIDTH);
+              
+              that.bus.writeI2cBlock(that.ADDRESS, that.CMD, 6, cmd, (err) => {
+                if(err) return rj(err);
+                (function dloop(that, start, end1, end, bstart, bend) {
+                  var buffer = buf.slice(bstart, bend + 1);
+                  that.bus.writeI2cBlock(that.ADDRESS, that.DATA, buffer.length, buffer, (err) => {
+                    if(err) return rj(err);
+                    if((start += 32) < end) 
+                      return dloop(that, start, end1, end, dirt[start], Math.min(dirt[start] + 31, de1));
+                    return((end1 = end++) < len)? cloop(that, end1, end1, end, dirt[end1], dirt[end1], dirt[end]) : rs();  
+                  });
+                })(that, start, end1, end, ds, Math.min(ds + 31, de1));
+              });  
+            }
+            else
+              return (end1 = end++) < len? cloop(that, start, end1, end, ds, dirt[end1], dirt[end]) : rs();
+          })(this, 0, 0, 1, dirt[0], dirt[0], dirt[1]);
+        });
+      });
+    });
+  }
+  
   syncSync() { 
     if(!this.buffer._dirty.length) return;     
     this.buffer.doubleBuffer((buffer) => {
@@ -633,6 +674,7 @@ class ssd1306 {
       
       this.waitForWriteSync();
       for(; end1 < len; end1 = end++) { 
+      
         if(end === len || (de = dirt[end]) % 128 === 0 || dirt[end1] + 1 !== de) {
           cmd[1] = ds % 128;
           cmd[2] = cmd[1] + (de1 = dirt[end1]) - ds;
@@ -650,6 +692,7 @@ class ssd1306 {
       }
     });
   }
+  
 }
 
 module.exports = ssd1306;
