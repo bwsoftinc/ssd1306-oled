@@ -221,7 +221,7 @@ class ssd1306 {
         that.bus.readByte(that.ADDRESS, that.ACCESSCONFIG, (err, data) => {
           if(err) return rj(err);
           if(data & 0x10) wait(that);
-            return rs();
+          return rs();
         });
       })(this);
     });
@@ -311,25 +311,6 @@ class ssd1306 {
     this.flushSync();
   }
     
-  drawStringByPixel(x, y, string, color, fixed) {  
-    color = (typeof color === 'undefined' || color > 0)? 1 : 0;
-    fixed = (typeof fixed === 'undefined' || !fixed)? false : true;
-    
-    var len = string.length, uncolor = !color;
-    for(var i = 0; i < len; i++) {
-      var glyph = this._getGlyph(string[i]), bytes = glyph.bytes, 
-          start = fixed? 0 : glyph.lead, end = fixed? bytes.length : bytes.length - glyph.trail;
-    
-      for (var m = start; m < end; m++)
-        for (var n = 0; n < 8; n++)
-          this._drawPixel(x + m - start, y + n, (bytes[m] >> n & 1) == color);
-      
-      x+= fixed? this.font.width : glyph.width;
-      for (var k = 0; k < 8; k++)
-        this._drawPixel(x++, y + k, uncolor);
-    }
-  }
-  
   drawString(x, y, string, leftAlign, until, fixed, color) {
     if(x < 0 || x >= this.WIDTH || y < 0 || y >= this.HEIGHT || !string) return;
     color = (typeof color === 'undefined' || color > 0)? 1 : 0;
@@ -525,9 +506,9 @@ class ssd1306 {
         buf = this.buffer;
     
     if (color)
-      buf.setOf(b, mask);
+      buf.setOr(b, mask);
     else 
-      buf.bytes(b, ~mask);
+      buf.setAnd(b, ~mask);
   }
 
   flush() {
