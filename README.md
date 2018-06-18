@@ -1,5 +1,5 @@
 # ssd1306-oled
-Fast I2C oled display font and text writing library for ssd1306 controller in nodejs
+Fast I2C oled display driver, font and text writing library for ssd1306 controller in nodejs
 
 ## What makes it faster (unlike other libraries)
 * Renders 1 byte at a time rather than 1 pixel at a time
@@ -15,4 +15,4 @@ Fast I2C oled display font and text writing library for ssd1306 controller in no
 * Right align or left align text
 * Text can be rendered to pixel coordinates
 * Clear a set number of pixles in front of or after text
-	* Great for updating/overwriting value displays without flushing entire 1k buffer.
+	* Great for updating/overwriting value displays without flushing entire 1k hardware buffer.
